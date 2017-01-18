@@ -19,6 +19,6 @@ public:
 private:
     ros::NodeHandle n;
 
-}
+};
 
 #endif /* CONTROLNODE_H_ */
