@@ -18,6 +18,10 @@ public:
 
 private:
     ros::NodeHandle n;
+    unsigned int mode;
+    
+
+    void initialize(ros::NodeHandle &nh);
 
 };
 
