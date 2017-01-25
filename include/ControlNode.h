@@ -1,28 +1,35 @@
 /*                                                                
- * JoystickTeleop.h
+ *  ControlNode.h
  *
  *  Created on: 18.01.2017
- *      Email: nindz9@gmail.com
- *          ITMO University
- *          Robotics Engineering Department
+ *      Author: nindz9@gmail.com
  */
 
 #ifndef CONTROLNODE_H_
 #define CONTROLNODE_H_
 
-class ControleNode
+#include <ros/ros.h>
+#include <control_node/TaskManager.h>
+
+class ControlNode
 {
 public:
     ControlNode();
     ~ControlNode();
 
 private:
+    // MEMBER VARIABLES
     ros::NodeHandle n;
-    unsigned int mode;
-    
+    ros::ServiceServer task_manager;
 
-    void initialize(ros::NodeHandle &nh);
-
+    // MEMBER FUNCTIONS (methods)
+    /*
+     * As soon as there is a request, 
+     * compare it to a string literal
+     * and print some output
+     */
+    bool choose_task(control_node::TaskManager::Request  &req,
+                     control_node::TaskManager::Response &res);
 };
 
 #endif /* CONTROLNODE_H_ */
