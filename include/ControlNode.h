@@ -8,8 +8,12 @@
 #ifndef CONTROLNODE_H_
 #define CONTROLNODE_H_
 
+#include <queue>
+#include <string>
 #include <ros/ros.h>
+
 #include <control_node/TaskManager.h>
+#include <control_node/BasicNavigation.h>
 
 class ControlNode
 {
@@ -22,6 +26,7 @@ private:
     ros::NodeHandle n;
     ros::ServiceServer task_manager;
     bool waiting;
+    std::queue<std::string> str_q;
 
     enum TestSpec 
     {
@@ -44,6 +49,24 @@ private:
      * untill proper test name wasn't specified
      */
     void spin();
+
+    /* 
+     * parse() goes through each string
+     * in a queue and forms a service request
+     */
+    void parse(control_node::BasicNavigation &srv);
+
+    /*
+     * Function implements all underlying
+     * tasks of Basic Navigation Test
+     */
+    void BasicNavigationTest();
+    
+    /* 
+     * The same function for Basic
+     * Transportation Test
+     */
+    void BasicTransportationTest();
 
 public:
     void execute_test();

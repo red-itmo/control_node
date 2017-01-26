@@ -1,0 +1,5 @@
+string position
+char orientation
+int8 delay
+---
+bool sent

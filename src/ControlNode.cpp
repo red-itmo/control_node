@@ -58,6 +58,21 @@ void ControlNode::spin()
     }
 }
 
+void ControlNode::parse(control_node::BasicNavigation &srv)
+{
+    // TODO
+}
+
+void ControlNode::BasicNavigationTest()
+{
+   // TODO 
+}
+
+void ControlNode::BasicTransportationTest()
+{
+    // TODO
+}
+
 void ControlNode::execute_test()
 {
     spin();
@@ -66,9 +81,11 @@ void ControlNode::execute_test()
     {
         case TEST_BNT:
             ROS_INFO("You've chosen Basic Navigation Test");
+            BasicNavigationTest();
             break;
         case TEST_BTT:
             ROS_INFO("You've chosen Basic Transportation Test");
+            BasicTransportationTest();
             break;
     }
 }
