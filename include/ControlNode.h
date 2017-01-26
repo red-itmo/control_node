@@ -21,6 +21,14 @@ private:
     // MEMBER VARIABLES
     ros::NodeHandle n;
     ros::ServiceServer task_manager;
+    bool waiting;
+
+    enum TestSpec 
+    {
+        TEST_BNT,
+        TEST_BTT
+    };
+    TestSpec ts;
 
     // MEMBER FUNCTIONS (methods)
     /*
@@ -30,6 +38,15 @@ private:
      */
     bool choose_task(control_node::TaskManager::Request  &req,
                      control_node::TaskManager::Response &res);
+
+    /*
+     * This version of spin rolls
+     * untill proper test name wasn't specified
+     */
+    void spin();
+
+public:
+    void execute_test();
 };
 
 #endif /* CONTROLNODE_H_ */

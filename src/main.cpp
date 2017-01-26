@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "control_node");
     ControlNode cn;
-    ros::spin();
+    cn.execute_test();
 
     return 0;
 }

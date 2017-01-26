@@ -13,6 +13,7 @@ ControlNode::ControlNode()
     task_manager = n.advertiseService("task_manager", 
                    &ControlNode::choose_task,
                    this);
+    waiting = true;
     
     ROS_INFO("Awaiting task to be named");
 }
@@ -29,11 +30,14 @@ bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
 {
    if (req.test == "BNT")
    {
-       ROS_INFO("You've chosen Basic Navigation Test");
+       ts = TEST_BNT;
+       waiting = false;
        return true;
    }
    else if (req.test == "BTT")
    {
+       ts = TEST_BTT;
+       waiting = false;
        ROS_INFO("You've chosen Basic Transportation Test");
        return true;
    }
@@ -44,3 +48,27 @@ bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
    }
 }
 
+void ControlNode::spin()
+{
+    ros::Rate loop_rate(5.0);
+    while(n.ok() && waiting)
+    {
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+}
+
+void ControlNode::execute_test()
+{
+    spin();
+
+    switch(ts)
+    {
+        case TEST_BNT:
+            ROS_INFO("You've chosen Basic Navigation Test");
+            break;
+        case TEST_BTT:
+            ROS_INFO("You've chosen Basic Transportation Test");
+            break;
+    }
+}
