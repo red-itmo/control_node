@@ -11,8 +11,9 @@
 ControlNode::ControlNode()
 {
     task_manager = n.advertiseService("task_manager", 
-                   &ControlNode::choose_task,
-                   this);
+                   &ControlNode::choose_task, this);
+    bnt_cl = n.serviceClient<control_node::BasicNavigation>
+             ("bnt_points");
     waiting = true;
     
     ROS_INFO("Awaiting task to be named");
@@ -58,14 +59,44 @@ void ControlNode::spin()
     }
 }
 
-void ControlNode::parse(control_node::BasicNavigation &srv)
+std::vector<std::string> ControlNode::parse()
 {
-    // TODO
+    std::string s = str_q.front();
+    std::string del = " ";
+    size_t pos = 0;
+    std::vector<std::string> names;
+
+    while((pos = s.find(del)) != std::string::npos)
+    {
+        names.push_back(s.substr(0, pos));
+        s.erase(0, pos + del.length());
+    }
+
+    names.push_back(s);
+
+    return names;
 }
 
 void ControlNode::BasicNavigationTest()
 {
-   // TODO 
+    while(!str_q.empty())
+    {
+        // Composing message
+        std::vector<std::string> elems = parse();
+        bnt_srv.request.position    = elems.at(0);
+        bnt_srv.request.orientation = 
+            elems.at(1).at(0);
+        bnt_srv.request.delay =
+            atoi(elems.at(2).c_str());
+
+        if (bnt_cl.call(bnt_srv))
+        {
+            if (bnt_srv.response.sent)
+            {
+                str_q.pop();
+            }
+        }
+    }
 }
 
 void ControlNode::BasicTransportationTest()
@@ -81,10 +112,14 @@ void ControlNode::execute_test()
     {
         case TEST_BNT:
             ROS_INFO("You've chosen Basic Navigation Test");
+            // This is the part where TS requested from referee-box
+            // TODO
             BasicNavigationTest();
             break;
         case TEST_BTT:
             ROS_INFO("You've chosen Basic Transportation Test");
+            // This is the part where TS requested from referee-box
+            // TODO
             BasicTransportationTest();
             break;
     }

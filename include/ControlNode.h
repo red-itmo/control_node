@@ -9,7 +9,9 @@
 #define CONTROLNODE_H_
 
 #include <queue>
+#include <vector>
 #include <string>
+#include <cstdlib>
 #include <ros/ros.h>
 
 #include <control_node/TaskManager.h>
@@ -25,6 +27,8 @@ private:
     // MEMBER VARIABLES
     ros::NodeHandle n;
     ros::ServiceServer task_manager;
+    ros::ServiceClient bnt_cl;
+    control_node::BasicNavigation bnt_srv;
     bool waiting;
     std::queue<std::string> str_q;
 
@@ -54,7 +58,7 @@ private:
      * parse() goes through each string
      * in a queue and forms a service request
      */
-    void parse(control_node::BasicNavigation &srv);
+    std::vector<std::string> parse();
 
     /*
      * Function implements all underlying
