@@ -8,72 +8,38 @@
 #ifndef CONTROLNODE_H_
 #define CONTROLNODE_H_
 
-#include <queue>
-#include <vector>
-#include <string>
-#include <cstdlib>
 #include <ros/ros.h>
+#include <string>
 
+#include <atwork_ros_msgs/TaskInfo.h>
 #include <control_node/TaskManager.h>
-#include <control_node/BasicNavigation.h>
 
 class ControlNode
 {
 public:
     ControlNode();
     ~ControlNode();
-
 private:
-    // MEMBER VARIABLES
-    ros::NodeHandle n;
+    //===========================
+    ros::NodeHandle nh;
+    ros::Subscriber task_sub; 
     ros::ServiceServer task_manager;
-    ros::ServiceClient bnt_cl;
-    control_node::BasicNavigation bnt_srv;
-    bool waiting;
-    std::queue<std::string> str_q;
+    atwork_ros_msgs::TaskInfo msg;
 
-    enum TestSpec 
+    enum Mode
     {
-        TEST_BNT,
-        TEST_BTT
+        NONE,
+        BNT,
+        BMT,
+        BTT
     };
-    TestSpec ts;
-
-    // MEMBER FUNCTIONS (methods)
-    /*
-     * As soon as there is a request, 
-     * compare it to a string literal
-     * and print some output
-     */
+    Mode m;
+    //===========================
+    void task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr&);
     bool choose_task(control_node::TaskManager::Request  &req,
                      control_node::TaskManager::Response &res);
-
-    /*
-     * This version of spin rolls
-     * untill proper test name wasn't specified
-     */
-    void spin();
-
-    /* 
-     * parse() goes through each string
-     * in a queue and forms a service request
-     */
-    std::vector<std::string> parse();
-
-    /*
-     * Function implements all underlying
-     * tasks of Basic Navigation Test
-     */
-    void BasicNavigationTest();
-    
-    /* 
-     * The same function for Basic
-     * Transportation Test
-     */
-    void BasicTransportationTest();
-
 public:
-    void execute_test();
+    void execute();
 };
 
 #endif /* CONTROLNODE_H_ */

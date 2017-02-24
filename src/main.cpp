@@ -13,7 +13,9 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "control_node");
     ControlNode cn;
-    cn.execute_test();
+    ROS_INFO("PLEASE, call a \"task_manager\" service with:");
+    ROS_INFO("1 = BNT, 2 = BMT, 3 = BTT");
+    cn.execute();
 
     return 0;
 }
