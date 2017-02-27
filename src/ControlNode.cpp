@@ -8,13 +8,15 @@
 #include <ControlNode.h>
 
 // Constructor starts service server
-ControlNode::ControlNode()
+ControlNode::ControlNode():
+    dest_ac("navi", true)
 {
     task_sub = nh.subscribe("/robot_example_ros/task_info", 1000, 
             &ControlNode::task_spec_rcv, this);
-    //task_manager = nh.advertiseService("task_manager",
-    //        &ControlNode::choose_task, this);
-    //m = NONE;
+    while(!dest_ac.waitForServer()){
+        ROS_INFO("Waiting for the action server to come up");
+    }
+    ROS_INFO("Action Server started!");
 }
 
 // Destructor shuts the node
@@ -35,11 +37,10 @@ void ControlNode::run()
 
     for(unsigned short i = 0, size = msg.tasks.size(); i < size; i++)
     {
-        atwork_ros_msgs::Task task = msg.tasks[i];
-        switch(task.type.data)
+        switch(msg.tasks[i].type.data)
         {
             case atwork_ros_msgs::Task::NAVIGATION:
-                //TODO
+                Navigation(msg.tasks[i].navigation_task);
                 break;
             case atwork_ros_msgs::Task::TRANSPORTATION:
                 //TODO
@@ -53,9 +54,20 @@ void ControlNode::task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr spec)
     msg = *spec;
 }
 
-void ControlNode::Navigation()
+void ControlNode::Navigation(const atwork_ros_msgs::NavigationTask& nav_info)
 {
-    //TODO
+    navigation_step::DestGoal dest_goal;
+    dest_goal.dest_loc    = nav_info.location.description.data;
+    dest_goal.orientation = nav_info.orientation.data;
+    dest_goal.duration    = nav_info.wait_time.data.toSec();
+
+    dest_ac.sendGoal(dest_goal);
+    dest_ac.waitForResult();
+    navigation_step::DestResult res_ptr = *(dest_ac.getResult());
+    if(res_ptr.has_got)
+    {
+        return;
+    }
 }
 
 void ControlNode::Manipulation()

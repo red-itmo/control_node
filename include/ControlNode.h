@@ -8,9 +8,11 @@
 #ifndef CONTROLNODE_H_
 #define CONTROLNODE_H_
 
-#include <ros/ros.h>
-#include <std_msgs/UInt64.h>
 #include <string>
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
+#include <navigation_step/DestAction.h>
 
 #include <atwork_ros_msgs/TaskInfo.h>
 //#include <control_node/TaskManager.h>
@@ -26,20 +28,12 @@ private:
     ros::Subscriber task_sub; 
     ros::ServiceServer task_manager;
     atwork_ros_msgs::TaskInfo msg;
-
-    /**enum Mode
-    {
-        NONE,
-        BNT,
-        BMT,
-        BTT
-    };
-    Mode m;**/
+    actionlib::SimpleActionClient<navigation_step::DestAction> dest_ac;
     //===========================
     void task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr);
     //bool choose_task(control_node::TaskManager::Request  &req,
     //                 control_node::TaskManager::Response &res);
-    void Navigation();
+    void Navigation(const atwork_ros_msgs::NavigationTask& nav_info);
     void Manipulation();
     void Transportation();
 public:

@@ -8,6 +8,8 @@ find_package(catkin REQUIRED
     roscpp
     std_msgs
     message_generation
+    actionlib
+    actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
