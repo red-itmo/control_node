@@ -9,10 +9,11 @@
 #define CONTROLNODE_H_
 
 #include <ros/ros.h>
+#include <std_msgs/UInt64.h>
 #include <string>
 
 #include <atwork_ros_msgs/TaskInfo.h>
-#include <control_node/TaskManager.h>
+//#include <control_node/TaskManager.h>
 
 class ControlNode
 {
@@ -26,20 +27,23 @@ private:
     ros::ServiceServer task_manager;
     atwork_ros_msgs::TaskInfo msg;
 
-    enum Mode
+    /**enum Mode
     {
         NONE,
         BNT,
         BMT,
         BTT
     };
-    Mode m;
+    Mode m;**/
     //===========================
-    void task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr&);
-    bool choose_task(control_node::TaskManager::Request  &req,
-                     control_node::TaskManager::Response &res);
+    void task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr);
+    //bool choose_task(control_node::TaskManager::Request  &req,
+    //                 control_node::TaskManager::Response &res);
+    void Navigation();
+    void Manipulation();
+    void Transportation();
 public:
-    void execute();
+    void run();
 };
 
 #endif /* CONTROLNODE_H_ */

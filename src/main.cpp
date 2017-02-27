@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     ControlNode cn;
     ROS_INFO("PLEASE, call a \"task_manager\" service with:");
     ROS_INFO("1 = BNT, 2 = BMT, 3 = BTT");
-    cn.execute();
+    cn.run();
 
     return 0;
 }

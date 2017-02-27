@@ -12,32 +12,63 @@ ControlNode::ControlNode()
 {
     task_sub = nh.subscribe("/robot_example_ros/task_info", 1000, 
             &ControlNode::task_spec_rcv, this);
-    task_manager = nh.advertiseService("task_manager",
-            &ControlNode::choose_task, this);
-    m = NONE;
+    //task_manager = nh.advertiseService("task_manager",
+    //        &ControlNode::choose_task, this);
+    //m = NONE;
 }
 
 // Destructor shuts the node
 ControlNode::~ControlNode()
 {
-    task_manager.shutdown();
+    task_sub.shutdown();
 }
 
-void ControlNode::execute()
+void ControlNode::run()
 {
+    ros::Rate loop_rate(10);
     do
     {
         ros::spinOnce();
+        loop_rate.sleep();
     }
-    while(m == NONE);
+    while(msg.tasks.empty());
+
+    for(unsigned short i = 0, size = msg.tasks.size(); i < size; i++)
+    {
+        atwork_ros_msgs::Task task = msg.tasks[i];
+        switch(task.type.data)
+        {
+            case atwork_ros_msgs::Task::NAVIGATION:
+                //TODO
+                break;
+            case atwork_ros_msgs::Task::TRANSPORTATION:
+                //TODO
+                break;
+        }
+    }
 }
 
-void ControlNode::task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr& spec)
+void ControlNode::task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr spec)
 {
     msg = *spec;
 }
 
-bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
+void ControlNode::Navigation()
+{
+    //TODO
+}
+
+void ControlNode::Manipulation()
+{
+    //TODO
+}
+
+void ControlNode::Transportation()
+{
+    //TODO
+}
+
+/**bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
                               control_node::TaskManager::Response &res)
 {
     switch(req.test)
@@ -58,4 +89,4 @@ bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
             ROS_INFO("Enter either 1, 2 or 3");
             return false;
     }
-}
+}**/
