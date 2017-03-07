@@ -7,22 +7,24 @@
 
 #include <ControlNode.h>
 
-// Constructor starts service server
 ControlNode::ControlNode():
-    dest_ac("navi", true)
-{
-    task_sub = nh.subscribe("/robot_example_ros/task_info", 1000, 
+    dest_ac("navi", true) 
+{       
+    //just to test, subscribe to fake_sender's publisher
+    task_sub = nh.subscribe("/fake_nav_info", 1000, 
             &ControlNode::task_spec_rcv, this);
-    while(!dest_ac.waitForServer()){
-        ROS_INFO("Waiting for the action server to come up");
-    }
-    ROS_INFO("Action Server started!");
+    bench_state_sub = 
+        nh.subscribe("/robot_example_ros/benchmark_state", 1000, 
+            &ControlNode::bench_state_rcv, this);
+    isSet = false;
+    isUpAndRunning = false;
 }
 
 // Destructor shuts the node
 ControlNode::~ControlNode()
 {
     task_sub.shutdown();
+    bench_state_sub.shutdown();
 }
 
 void ControlNode::run()
@@ -33,19 +35,19 @@ void ControlNode::run()
         ros::spinOnce();
         loop_rate.sleep();
     }
-    while(msg.tasks.empty());
+    while((bench.connected_teams.empty() || msg.tasks.empty()) && nh.ok());
 
-    for(unsigned short i = 0, size = msg.tasks.size(); i < size; i++)
+    switch(bench.scenario.type.data)
     {
-        switch(msg.tasks[i].type.data)
-        {
-            case atwork_ros_msgs::Task::NAVIGATION:
-                Navigation(msg.tasks[i].navigation_task);
+            case atwork_ros_msgs::BenchmarkScenario::BNT:
+                Navigation();
                 break;
-            case atwork_ros_msgs::Task::TRANSPORTATION:
-                //TODO
+            case atwork_ros_msgs::BenchmarkScenario::BMT:
+                Manipulation();
                 break;
-        }
+            case atwork_ros_msgs::BenchmarkScenario::BTT:
+                Transportation();
+                break;
     }
 }
 
@@ -54,51 +56,102 @@ void ControlNode::task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr spec)
     msg = *spec;
 }
 
-void ControlNode::Navigation(const atwork_ros_msgs::NavigationTask& nav_info)
+void ControlNode::bench_state_rcv(const atwork_ros_msgs::BenchmarkStateConstPtr state)
 {
-    navigation_step::DestGoal dest_goal;
-    dest_goal.dest_loc    = nav_info.location.description.data;
-    dest_goal.orientation = nav_info.orientation.data;
-    dest_goal.duration    = nav_info.wait_time.data.toSec();
+    bench = *state;
+}
 
-    dest_ac.sendGoal(dest_goal);
-    dest_ac.waitForResult();
-    navigation_step::DestResult res_ptr = *(dest_ac.getResult());
-    if(res_ptr.has_got)
+void ControlNode::Navigation()
+{
+    switch(bench.phase.data)
     {
-        return;
+        case atwork_ros_msgs::BenchmarkState::PREPARATION:
+            {
+                if(!isSet)
+                {
+                    for(int i = 0, size = msg.tasks.size(); i < size; i++)
+                    {
+                        navigation_step::DestGoal dest_goal;
+                        dest_goal.dest_loc = msg.tasks[i].navigation_task.location.description.data;
+                        dest_goal.duration = msg.tasks[i].navigation_task.wait_time.data.toSec();
+                        switch(msg.tasks[i].navigation_task.orientation.data)
+                        {
+                            case atwork_ros_msgs::NavigationTask::NORTH:
+                                dest_goal.orientation = "N";
+                                break;
+                            case atwork_ros_msgs::NavigationTask::EAST:
+                                dest_goal.orientation = "E";
+                                break;
+                            case atwork_ros_msgs::NavigationTask::SOUTH:
+                                dest_goal.orientation = "S";
+                                break;
+                            case atwork_ros_msgs::NavigationTask::WEST:
+                                dest_goal.orientation = "W";
+                                break;
+                        }
+                        targets.push(dest_goal);
+                    }
+                    isSet = true;
+                }
+            }
+            break;
+        case atwork_ros_msgs::BenchmarkState::CALIBRATION:
+            {
+                if(!isUpAndRunning)
+                {
+                    while(!dest_ac.waitForServer()){
+                        ROS_INFO("Waiting for the action server to come up");
+                    }
+                    ROS_INFO("Action Server started!");
+
+                    isUpAndRunning = true;
+                }
+            }
+            break;
+        case atwork_ros_msgs::BenchmarkState::EXECUTION:
+            {
+                do
+                {
+                    dest_ac.sendGoal(targets.front());
+                    dest_ac.waitForResult();
+                    if(dest_ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+                    {
+                        targets.pop();
+                    }
+                } while(!targets.empty());
+            }
+            break;
     }
 }
 
 void ControlNode::Manipulation()
 {
-    //TODO
+    switch(bench.phase.data)
+    {
+        case atwork_ros_msgs::BenchmarkState::PREPARATION:
+            // TODO
+            break;
+        case atwork_ros_msgs::BenchmarkState::CALIBRATION:
+            // TODO
+            break;
+        case atwork_ros_msgs::BenchmarkState::EXECUTION:
+            // TODO
+            break;
+    }
 }
 
 void ControlNode::Transportation()
 {
-    //TODO
-}
-
-/**bool ControlNode::choose_task(control_node::TaskManager::Request  &req,
-                              control_node::TaskManager::Response &res)
-{
-    switch(req.test)
+    switch(bench.phase.data)
     {
-        case 1:
-            m = BNT;
-            res.ans = "Execute Basic Navigation Test!";
-            return true;
-        case 2:
-            m = BMT;
-            res.ans = "Execute Basic Manipulation Test!";
-            return true;
-        case 3:
-            m = BTT;
-            res.ans = "Execute Basic Transportation Test!";
-            return true;
-        default:
-            ROS_INFO("Enter either 1, 2 or 3");
-            return false;
+        case atwork_ros_msgs::BenchmarkState::PREPARATION:
+            // TODO
+            break;
+        case atwork_ros_msgs::BenchmarkState::CALIBRATION:
+            // TODO
+            break;
+        case atwork_ros_msgs::BenchmarkState::EXECUTION:
+            // TODO
+            break;
     }
-}**/
+}

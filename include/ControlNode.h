@@ -9,13 +9,14 @@
 #define CONTROLNODE_H_
 
 #include <string>
+#include <queue>
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <navigation_step/DestAction.h>
 
 #include <atwork_ros_msgs/TaskInfo.h>
-//#include <control_node/TaskManager.h>
+#include <atwork_ros_msgs/BenchmarkState.h>
 
 class ControlNode
 {
@@ -23,17 +24,18 @@ public:
     ControlNode();
     ~ControlNode();
 private:
-    //===========================
+    bool isSet; // flag is related to composed scenario msg
+    bool isUpAndRunning;
     ros::NodeHandle nh;
+    ros::Subscriber bench_state_sub;
     ros::Subscriber task_sub; 
-    ros::ServiceServer task_manager;
     atwork_ros_msgs::TaskInfo msg;
+    atwork_ros_msgs::BenchmarkState bench;
+    std::queue<navigation_step::DestGoal> targets;
     actionlib::SimpleActionClient<navigation_step::DestAction> dest_ac;
-    //===========================
     void task_spec_rcv(const atwork_ros_msgs::TaskInfoConstPtr);
-    //bool choose_task(control_node::TaskManager::Request  &req,
-    //                 control_node::TaskManager::Response &res);
-    void Navigation(const atwork_ros_msgs::NavigationTask& nav_info);
+    void bench_state_rcv(const atwork_ros_msgs::BenchmarkStateConstPtr);
+    void Navigation(); // PARAMETER TYPE???
     void Manipulation();
     void Transportation();
 public:
