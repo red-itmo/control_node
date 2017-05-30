@@ -7,9 +7,11 @@ project(control_node)
 find_package(catkin REQUIRED
     roscpp
     std_msgs
-    message_generation
+    geometry_msgs
+    atwork_ros_msgs
     actionlib
     actionlib_msgs
+    message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -56,6 +58,8 @@ find_package(catkin REQUIRED
 add_service_files(
    FILES
    TaskManager.srv
+   ReleaseObject.srv
+   GraspObject.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -69,6 +73,7 @@ add_service_files(
 generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   atwork_ros_msgs
 )
 
 ################################################

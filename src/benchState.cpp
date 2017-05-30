@@ -8,6 +8,8 @@ bool changeStateCb(std_srvs::Empty::Request& req,
 				   std_srvs::Empty::Response& res)
 {
 	bState.phase.data--;
+	ROS_INFO("Now it's less by 1.");
+	return true;
 }
 
 int main(int argc, char** argv)
@@ -26,9 +28,11 @@ int main(int argc, char** argv)
 	bState.scenario.description.data = "BNT 1: Basic Navigation Test instance #1";
 
 	ROS_INFO("Ready to recieve from client!");
+	ros::Rate r(10.0);
 	while(nh.ok())
 	{
-		ros::spinOnce();
 		benchPub.publish(bState);
+		ros::spinOnce();
+		r.sleep();
 	}
 }
